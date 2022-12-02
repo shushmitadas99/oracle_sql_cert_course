@@ -108,11 +108,56 @@ WHERE TRUNC(hiredate, 'YEAR') = '01/01/1982';
 
 -- #14 Conversion SRFs & Date Formatting
 
--- TOCHAR(<date>/<numeric>, 'formatting template'): Covert a date or a number to a character string
+-- TOCHAR(<date>/<numeric>, 'formatting template') => Covert a date or a number to a character string
+
+-- TO_CHAR(<date>, 'formatting template')
 SELECT TO_CHAR(SYSDATE, 'MM-DD-YYYY') FROM dual;  -- => 12-01-2022
-SELECT TO_CHAR(SYSDATE, 'DDth "of" MONTH, YYYY') FROM dual;  -- => 01ST of DECEMBER , 2022
+SELECT TO_CHAR(SYSDATE, 'DAY - DDth "of" MONTH, YEAR') FROM dual;  -- => THURSDAY - 01ST of DECEMBER , TWENTY TWENTY-TWO
+SELECT TO_CHAR(SYSDATE, 'DY - DDth "of" MON, YYYY') FROM dual;  -- => THU - 01ST of DEC, 2022
 
+-- TO_CHAR(<numeric>, 'formatting template')
+SELECT TO_CHAR(27.6, '9999.99') FROM dual;  -- => 27.60 | '9' - Reprsents a number
+SELECT TO_CHAR(278.6, '0000.00') FROM dual;  -- => 0278.60 | '0' - Forces a zero to display
+SELECT TO_CHAR(12.7, '$999.99') FROM dual;  -- => $12.70 | '$' - Puts a dollar sign | '.' - Decimal point
+SELECT TO_CHAR(12400.8, '$99,999.99') FROM dual;  -- => $12,400.80 | ',' - Comma for thousands seperator
 
+-- Question: Write a query that selects from the employee table their salaries, but it needs to be displayed with the dollar
+-- sign and comma thousands separator format
+SELECT ename, TO_CHAR(sal, '$99,999.99') AS SAL FROM emp;
 
+-- Instructor's solution
+SELECT ename, sal, TO_CHAR(sal, '$99,999.99') AS SALARIES FROM emp;  -- He added the original sal column for comparison
 
+-- TO_DATE('str', 'format') => Converting a string to a date/date type
+SELECT ADD_MONTHS(TO_DATE('2022-12-02', 'YYYY-MM-DD'), 2) AS "ADDED MONTHS" FROM dual;  -- => 02/02/2023 | added 2 months to original date 12/02/2022
+SELECT TO_DATE('3 of June, 2022', 'DD "of" MONTH, YYYY') FROM dual;  -- => 06/03/2022
 
+-- LAST_DAY(D) => Returns the last day iof the month in which the given date falls | requires a date as an argument to work properly
+SELECT LAST_DAY(SYSDATE) FROM dual;  -- => 12/31/2022
+
+-- NEXT_DAY(<date>, 'Character') => Returns a valid date representing the first occurrence of the 'C' day following the date represented in 'D'
+SELECT NEXT_DAY('12-02-2022', 'Tuesday') FROM dual;  -- => 12/06/2022
+SELECT NEXT_DAY(TO_DATE('3 of June, 2022', 'DD "of" MONTH, YYYY'), 'Tuesday') FROM dual;  -- => 06/07/2022
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- #15 Concluding SRFs A NULL/NULLIF Functions
+
+-- NVL(<col_name>, <replacement_val>) | A.k.a Novel=> Very helpful for filling out column cells with NULL values
+-- NVL alternative -> NVL2 (skipped by instructor)
+SELECT ename, job, sal, NVL(comm, 0)
+FROM emp
+WHERE empno IN (7839, 7698, 7566, 7654); -- => Returns 0 in the cells of commision column where it's NULL originally for the selected employees
+
+-- Question: Write a query that returns "No data found" where there's NULL cells in commision column
+SELECT ename, job, sal, NVL(comm, 'No data found')
+FROM emp
+WHERE empno IN (7839, 7698, 7566, 7654);-- Doesn't work, Gives "Invalid Number" error
+
+-- Instructor's solution 
+-- Instructor's explaination why the above query doesn't work: The "comm" column holds numeric data type, so it's expecting the same data type in cells
+-- Therefore, we need to convert the numeric "comm" column into character representation using TO_CHAR()
+-- Then we use NVL where the 1st argument is the character representation of "comm" column and the 2nd argument is the replacement string value
+SELECT ename, job, sal, NVL(TO_CHAR(comm), 'No Data Found')
+FROM emp
+WHERE empno IN (7839, 7698, 7566, 7654);
