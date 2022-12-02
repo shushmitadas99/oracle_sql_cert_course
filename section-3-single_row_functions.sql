@@ -143,7 +143,7 @@ SELECT NEXT_DAY(TO_DATE('3 of June, 2022', 'DD "of" MONTH, YYYY'), 'Tuesday') FR
 
 -- #15 Concluding SRFs A NULL/NULLIF Functions
 
--- NVL(<col_name>, <replacement_val>) | A.k.a Novel=> Very helpful for filling out column cells with NULL values
+-- NVL(<col_name>, <replacement_val>) | A.k.a Novel => Very helpful for filling out column cells with NULL values
 -- NVL alternative -> NVL2 (skipped by instructor)
 SELECT ename, job, sal, NVL(comm, 0)
 FROM emp
@@ -161,3 +161,12 @@ WHERE empno IN (7839, 7698, 7566, 7654);-- Doesn't work, Gives "Invalid Number" 
 SELECT ename, job, sal, NVL(TO_CHAR(comm), 'No Data Found')
 FROM emp
 WHERE empno IN (7839, 7698, 7566, 7654);
+
+-- NULLIF(arg1, arg2) => Comapares two arguments and return NULL if both the arguments are equal to one another in value
+SELECT ename, LENGTH(ename), NULLIF(LENGTH(ename), 5) FROM emp;  -- Returns NULL for cells w/ arg values matching, otherwise shows the length of ename
+
+-- Question: Using the Novel function, print out on the 3rd column "Length = 5" in the case it's NULL value in cell
+SELECT ename, LENGTH(ename), NVL(TO_CHAR(NULLIF(LENGTH(ename), 5)), 'Length = 5') AS RESULT FROM emp;  -- works as expected!
+
+-- Instructor's solution: He expanded on the query unlike my solution
+SELECT ename, LENGTH(ename), NVL(NULLIF(TO_CHAR(LENGTH(ename)), TO_CHAR(5)), 'Length = 5') AS RESULT FROM emp;
